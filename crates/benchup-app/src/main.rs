@@ -14,15 +14,19 @@ fn main() -> eframe::Result {
     // Documents that launch the app arrive before the egui app is created.
     benchup_app::desktop_files::prepare_launch();
 
+    // eframe also installs this image as the macOS Dock icon at runtime, so
+    // macOS needs the padded Apple-grid artwork to match neighbouring apps.
+    #[cfg(target_os = "macos")]
+    let icon = include_bytes!("../../../assets/branding/icon-macos-512.png");
+    #[cfg(not(target_os = "macos"))]
+    let icon = include_bytes!("../../../assets/branding/icon-256.png");
     let viewport = eframe::egui::ViewportBuilder::default()
         .with_decorations(false)
         .with_inner_size([1440., 900.])
         .with_min_inner_size([800., 540.])
         .with_icon(
-            eframe::icon_data::from_png_bytes(include_bytes!(
-                "../../../assets/branding/icon-256.png"
-            ))
-            .expect(tr!("startup.the_bundled_benchup_icon_must_be_a_valid")),
+            eframe::icon_data::from_png_bytes(icon)
+                .expect(tr!("startup.the_bundled_benchup_icon_must_be_a_valid")),
         );
     // Migrate preferences before eframe opens its storage under the new ID.
     let viewport = viewport.with_app_id(benchup_app::APP_ID);
