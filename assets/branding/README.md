@@ -4,9 +4,10 @@ An extruded workbench with cream faces and a warm wood cross rail on a tomato-re
 
 - `logo.svg`: scalable application badge; also used for the favicon and loading screen.
 - `mark.svg`: transparent red mark for use outside the badge.
-- `icon-*.png`: raster badges from 16 to 1024 pixels; the native window uses `icon-256.png`.
+- `icon-*.png`: raster badges from 16 to 1024 pixels; the native window uses `icon-256.png` on Windows and Linux.
+- `icon-macos-512.png`: badge on Apple's icon grid (824 of 1024 px with a soft shadow); eframe installs it as the runtime Dock icon on macOS.
 - `favicon.ico`: Windows/browser icon containing 16, 32, 48, 64, 128, and 256 pixel images.
-- `benchup.icns`: macOS icon asset for application packaging.
+- `benchup.icns`: macOS icon asset for application packaging, using the same padded Apple-grid artwork so it matches other Dock and app switcher icons.
 - `apple-touch-icon.png`: opaque 180 pixel Apple touch icon.
 - `icon-maskable-512.png`: opaque badge with extra padding for launcher masks.
 - `site.webmanifest`: browser application metadata and launcher icons; paths support hosting in a subdirectory.

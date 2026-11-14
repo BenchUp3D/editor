@@ -6,7 +6,7 @@ Run from any directory: python3 scripts/generate_branding.py
 """
 from pathlib import Path
 import subprocess
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'assets' / 'branding'
@@ -89,6 +89,26 @@ def raster(size, rounded=True, padding=0):
     return image.resize((size, size), Image.Resampling.LANCZOS)
 
 
+def macos_raster(size):
+    """Place the badge on Apple's icon grid so it matches other Dock icons.
+
+    macOS app icons draw an 824 px rounded rectangle centred on a 1024 px
+    canvas with a soft drop shadow; a full-bleed badge looks oversized in the
+    Dock and the app switcher.
+    """
+    scale = size / 1024
+    badge = round(824 * scale)
+    offset = (size - badge) // 2
+    image = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    shadow = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).rounded_rectangle(
+        (offset, offset + round(10 * scale), offset + badge - 1, offset + badge - 1 + round(10 * scale)),
+        radius=badge * 28 / 128, fill=(0, 0, 0, 77))
+    image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(max(1, 10 * scale))))
+    image.alpha_composite(raster(badge), (offset, offset))
+    return image
+
+
 def rgb(hex_color):
     return ', '.join(str(int(hex_color[i:i + 2], 16)) for i in (1, 3, 5))
 
@@ -124,7 +144,9 @@ if __name__ == '__main__':
     raster(180, rounded=False).save(OUT / 'apple-touch-icon.png')
     raster(512, rounded=False, padding=8).save(OUT / 'icon-maskable-512.png')
     raster(256).save(OUT / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
-    raster(1024).save(OUT / 'benchup.icns')
+    # macOS uses padded artwork for both the bundle and the runtime Dock icon.
+    macos_raster(512).save(OUT / 'icon-macos-512.png')
+    macos_raster(1024).save(OUT / 'benchup.icns')
     rust_path = ROOT / 'crates/benchup-app/src/brand_mark.rs'
     rust_path.write_text(rust())
     subprocess.run(['rustfmt', '--edition', '2024', str(rust_path)], check=True)
